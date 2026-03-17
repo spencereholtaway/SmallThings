@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import EntryList from './components/EntryList.jsx';
+import Map from './components/Map.jsx';
+import FilterDropdown from './components/FilterDropdown.jsx';
 import EntryForm from './components/EntryForm.jsx';
 import {
   loadReceiptsFromJson,
   exportReceiptsJson,
-  removeReceipt,
   receiptCount,
 } from './lib/receipts.js';
 
@@ -21,7 +21,7 @@ function downloadFile(content, filename) {
 export default function App() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [receiptsLoaded, setReceiptsLoaded] = useState(false);
+  const [filter, setFilter] = useState('all');
   const [unsaved, setUnsaved] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -48,7 +48,6 @@ export default function App() {
     reader.onload = (ev) => {
       try {
         loadReceiptsFromJson(ev.target.result);
-        setReceiptsLoaded(true);
         setUnsaved(false);
         setEntries((prev) => [...prev]);
       } catch {
@@ -65,68 +64,21 @@ export default function App() {
     setUnsaved(false);
   }
 
-  function handleStartFresh() {
-    setReceiptsLoaded(true);
-  }
-
   function handleEntryCreated() {
     setUnsaved(true);
     fetchEntries();
   }
 
-  async function handleDelete(id) {
-    try {
-      const res = await fetch(`/api/entries/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        removeReceipt(id);
-        setEntries((prev) => prev.filter((e) => e.id !== id));
-        setUnsaved(true);
-      }
-    } catch (err) {
-      console.error('Failed to delete entry:', err);
-    }
-  }
-
-  if (!receiptsLoaded) {
-    return (
-      <div className="app">
-        <header className="app__header">
-          <h1>A Series of Small Things</h1>
-        </header>
-        <main className="app__main">
-          <div className="data-screen">
-            <p className="data-screen__lead">
-              Your entries are yours. Load your data file to see which things are yours,
-              or start fresh if this is your first time.
-            </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              style={{ display: 'none' }}
-              onChange={handleLoadFile}
-            />
-            <button className="btn btn--primary" onClick={() => fileInputRef.current.click()}>
-              Load my data file
-            </button>
-            <button className="btn btn--secondary" onClick={handleStartFresh}>
-              Start fresh
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="app">
-      <header className="app__header">
-        <h1>A Series of Small Things</h1>
-        <div className="app__header-actions">
-          {unsaved && <span className="unsaved-badge">unsaved changes</span>}
-          <button className="btn btn--small" onClick={handleSaveFile}>
-            Save my data
-          </button>
+      <Map entries={entries} filter={filter} />
+
+      <div className="overlay-top">
+        <FilterDropdown value={filter} onChange={setFilter} />
+      </div>
+
+      {receiptCount() > 0 && (
+        <div className="overlay-data-actions">
           <input
             ref={fileInputRef}
             type="file"
@@ -135,20 +87,25 @@ export default function App() {
             onChange={handleLoadFile}
           />
           <button
-            className="btn btn--small btn--secondary"
-            onClick={() => fileInputRef.current.click()}
+            className="data-btn"
+            onClick={handleSaveFile}
+            title="Save my data"
           >
-            Load file
+            {unsaved ? '●' : ''} ↓
+          </button>
+          <button
+            className="data-btn"
+            onClick={() => fileInputRef.current.click()}
+            title="Load data file"
+          >
+            ↑
           </button>
         </div>
-      </header>
-      <main className="app__main">
-        {receiptCount() > 0 && (
-          <p className="data-note">{receiptCount()} of your things loaded</p>
-        )}
-        <EntryList entries={entries} onDelete={handleDelete} loading={loading} />
+      )}
+
+      <div className="overlay-bottom">
         <EntryForm onCreated={handleEntryCreated} />
-      </main>
+      </div>
     </div>
   );
 }

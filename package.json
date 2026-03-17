@@ -2,9 +2,15 @@
   "name": "a-series-of-small-things",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
     "start": "cd backend && npm install && node src/index.js",
     "dev": "cd backend && npm run dev"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0"
   }
 }

@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { insertEntry, getEntries, deleteEntry } from '../db.js';
 import { validateEntry, validateUuid, parseBbox } from '../validation.js';
 
 export function entriesRouter(store, { postLimiter, getLimiter, deleteLimiter }) {
   const router = Router();
 
-  router.post('/', postLimiter, (req, res) => {
+  router.post('/', postLimiter, async (req, res, next) => {
     const errors = validateEntry(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ errors });
@@ -21,18 +20,18 @@ export function entriesRouter(store, { postLimiter, getLimiter, deleteLimiter })
     };
 
     try {
-      insertEntry(store, entry);
+      await store.insertEntry(entry);
     } catch (err) {
       if (err.code === 'DUPLICATE_ID') {
         return res.status(409).json({ error: 'Entry with this id already exists' });
       }
-      throw err;
+      return next(err);
     }
 
     res.status(201).json({ id: entry.id, status: 'created' });
   });
 
-  router.get('/', getLimiter, (req, res) => {
+  router.get('/', getLimiter, async (req, res, next) => {
     const since = req.query.since || new Date(0).toISOString();
 
     if (req.query.since && isNaN(Date.parse(req.query.since))) {
@@ -47,21 +46,28 @@ export function entriesRouter(store, { postLimiter, getLimiter, deleteLimiter })
       }
     }
 
-    const entries = getEntries(store, { since, bbox });
-    res.json({ entries, count: entries.length, since });
+    try {
+      const entries = await store.getEntries({ since, bbox });
+      res.json({ entries, count: entries.length, since });
+    } catch (err) {
+      next(err);
+    }
   });
 
-  router.delete('/:id', deleteLimiter, (req, res) => {
+  router.delete('/:id', deleteLimiter, async (req, res, next) => {
     if (!validateUuid(req.params.id)) {
       return res.status(400).json({ error: 'id must be a valid UUID v4' });
     }
 
-    const deleted = deleteEntry(store, req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ error: 'Entry not found' });
+    try {
+      const deleted = await store.deleteEntry(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Entry not found' });
+      }
+      res.status(204).end();
+    } catch (err) {
+      next(err);
     }
-
-    res.status(204).end();
   });
 
   return router;

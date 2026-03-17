@@ -1,6 +1,6 @@
-import { describe, it, before, after, beforeEach } from 'node:test';
+import { describe, it, before, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createStore, insertEntry, getEntries, deleteEntry } from '../src/db.js';
+import { createStore } from '../src/db.js';
 import { validateEntry, validateUuid, parseBbox } from '../src/validation.js';
 
 // --- Validation unit tests ---
@@ -84,7 +84,7 @@ describe('parseBbox', () => {
   });
 });
 
-// --- Database integration tests ---
+// --- Store integration tests ---
 
 describe('Store', () => {
   let store;
@@ -107,11 +107,11 @@ describe('Store', () => {
     ...overrides,
   });
 
-  it('inserts and retrieves an entry', () => {
+  it('inserts and retrieves an entry', async () => {
     const entry = makeEntry();
-    insertEntry(store, entry);
+    await store.insertEntry(entry);
 
-    const results = getEntries(store, { since: new Date(Date.now() - 60000).toISOString() });
+    const results = await store.getEntries({ since: new Date(Date.now() - 60000).toISOString() });
     assert.equal(results.length, 1);
     assert.equal(results[0].id, entry.id);
     assert.equal(results[0].anon_lat, entry.anon_lat);
@@ -119,30 +119,30 @@ describe('Store', () => {
     assert.equal(results[0].received_at, undefined);
   });
 
-  it('rejects duplicate id', () => {
+  it('rejects duplicate id', async () => {
     const entry = makeEntry();
-    insertEntry(store, entry);
-    assert.throws(() => insertEntry(store, entry), /already exists/);
+    await store.insertEntry(entry);
+    await assert.rejects(() => store.insertEntry(entry), /already exists/);
   });
 
-  it('filters by since', () => {
+  it('filters by since', async () => {
     const old = makeEntry({ created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() });
     const recent = makeEntry();
-    insertEntry(store, old);
-    insertEntry(store, recent);
+    await store.insertEntry(old);
+    await store.insertEntry(recent);
 
-    const results = getEntries(store, { since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() });
+    const results = await store.getEntries({ since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() });
     assert.equal(results.length, 1);
     assert.equal(results[0].id, recent.id);
   });
 
-  it('filters by bbox', () => {
+  it('filters by bbox', async () => {
     const inside = makeEntry({ anon_lat: 37.5, anon_lng: -122.5 });
     const outside = makeEntry({ anon_lat: 40.0, anon_lng: -120.0 });
-    insertEntry(store, inside);
-    insertEntry(store, outside);
+    await store.insertEntry(inside);
+    await store.insertEntry(outside);
 
-    const results = getEntries(store, {
+    const results = await store.getEntries({
       since: new Date(Date.now() - 60000).toISOString(),
       bbox: { minLat: 37, minLng: -123, maxLat: 38, maxLng: -122 },
     });
@@ -150,12 +150,10 @@ describe('Store', () => {
     assert.equal(results[0].id, inside.id);
   });
 
-  it('deletes an entry', () => {
+  it('deletes an entry', async () => {
     const entry = makeEntry();
-    insertEntry(store, entry);
-    assert.ok(deleteEntry(store, entry.id));
-    assert.ok(!deleteEntry(store, entry.id)); // already gone
+    await store.insertEntry(entry);
+    assert.ok(await store.deleteEntry(entry.id));
+    assert.ok(!await store.deleteEntry(entry.id)); // already gone
   });
-
-
 });

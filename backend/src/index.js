@@ -1,66 +1,17 @@
-import express from 'express';
-import cors from 'cors';
-import rateLimit from 'express-rate-limit';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { openStore } from './db.js';
-import { entriesRouter } from './routes/entries.js';
+import express from 'express';
+import app from './app.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const app = express();
-const store = openStore();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Rate limiting
-const postLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 60,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests. Max 60 POST requests per hour.' },
-});
-
-const getLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 300,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests. Max 300 GET requests per hour.' },
-});
-
-const deleteLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests. Max 30 DELETE requests per hour.' },
-});
-
-// Routes
-app.use('/entries', entriesRouter(store, { postLimiter, getLimiter, deleteLimiter }));
-
-// Serve frontend static files
+// Serve frontend static files and SPA fallback (local dev only)
 app.use(express.static(join(__dirname, '..', '..', 'frontend', 'dist')));
-
-// Health check
-app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-
-// SPA fallback — serve index.html for any non-API route
 app.get('*', (_req, res) => {
   res.sendFile(join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
 });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  process.exit(0);
-});
+process.on('SIGINT', () => process.exit(0));
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-});
-
-export { app, store };
+app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));

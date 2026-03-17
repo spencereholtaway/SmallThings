@@ -158,6 +158,36 @@ body {
   left: 0;
   z-index: 10;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.location-btn {
+  display: inline-flex;
+  width: 43px;
+  height: 43px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #333;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.location-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.location-btn:active {
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .filter-toggle {

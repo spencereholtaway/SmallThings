@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Map from './components/Map.jsx';
 import FilterDropdown from './components/FilterDropdown.jsx';
 import EntryForm from './components/EntryForm.jsx';
+import { Navigation } from 'lucide-react';
 import {
   loadReceiptsFromJson,
   exportReceiptsJson,
@@ -24,6 +25,7 @@ export default function App() {
   const [filter, setFilter] = useState('all');
   const [unsaved, setUnsaved] = useState(false);
   const fileInputRef = useRef(null);
+  const mapRef = useRef(null);
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -39,6 +41,7 @@ export default function App() {
 
   useEffect(() => {
     fetchEntries();
+    navigator.geolocation.getCurrentPosition(() => {}, () => {});
   }, [fetchEntries]);
 
   function handleLoadFile(e) {
@@ -71,10 +74,18 @@ export default function App() {
 
   return (
     <div className="app">
-      <Map entries={entries} filter={filter} />
+      <Map ref={mapRef} entries={entries} filter={filter} />
 
       <div className="overlay-top">
         <FilterDropdown value={filter} onChange={setFilter} />
+        <button
+          className="location-btn"
+          onClick={() => mapRef.current?.flyToUser()}
+          title="Go to my location"
+          type="button"
+        >
+          <Navigation size={18} strokeWidth={1.75} />
+        </button>
       </div>
 
       {receiptCount() > 0 && (

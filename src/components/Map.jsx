@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import maplibregl from 'maplibre-gl';
 import Supercluster from 'supercluster';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -49,7 +49,7 @@ function createEmojiElement(emoji) {
   const pulse = document.createElement('div');
   pulse.className = 'map-marker-pulse';
   pulse.style.setProperty('--pulse-color', getEmojiColor(emoji));
-  pulse.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+  pulse.style.animationDelay = `-${(Math.random() * 2.4).toFixed(2)}s`;
 
   const emojiEl = document.createElement('div');
   emojiEl.className = 'map-marker--emoji';
@@ -66,7 +66,7 @@ function createClusterElement(count) {
 
   const pulse = document.createElement('div');
   pulse.className = 'map-marker-pulse map-marker-pulse--cluster';
-  pulse.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+  pulse.style.animationDelay = `-${(Math.random() * 2.4).toFixed(2)}s`;
 
   const circle = document.createElement('div');
   circle.className = 'map-marker--cluster-circle';
@@ -77,11 +77,27 @@ function createClusterElement(count) {
   return wrapper;
 }
 
-export default function Map({ entries, filter }) {
+const Map = forwardRef(function Map({ entries, filter }, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const clusterRef = useRef(null); // { index, visible }
+
+  useImperativeHandle(ref, () => ({
+    flyToUser() {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          mapRef.current?.flyTo({
+            center: [pos.coords.longitude, pos.coords.latitude],
+            zoom: 13,
+            duration: 1200,
+          });
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000 },
+      );
+    },
+  }));
 
   function renderMarkers() {
     const map = mapRef.current;
@@ -257,4 +273,6 @@ export default function Map({ entries, filter }) {
   }, [entries, filter]);
 
   return <div ref={containerRef} className="map" />;
-}
+});
+
+export default Map;

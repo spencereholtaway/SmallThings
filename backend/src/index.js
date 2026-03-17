@@ -3,7 +3,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { openDb, cleanupOldEntries } from './db.js';
+import { openDb } from './db.js';
 import { entriesRouter } from './routes/entries.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -52,14 +52,6 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.get('*', (_req, res) => {
   res.sendFile(join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
 });
-
-// Cleanup old entries on startup and every 24 hours
-const runCleanup = () => {
-  const deleted = cleanupOldEntries(db);
-  if (deleted > 0) console.log(`Cleaned up ${deleted} old entries`);
-};
-runCleanup();
-setInterval(runCleanup, 24 * 60 * 60 * 1000);
 
 // Graceful shutdown
 process.on('SIGINT', () => {

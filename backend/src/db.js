@@ -57,8 +57,3 @@ export function deleteEntry(db, id) {
   return result.changes > 0;
 }
 
-export function cleanupOldEntries(db) {
-  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const result = db.prepare('DELETE FROM entries WHERE created_at < ?').run(cutoff);
-  return result.changes;
-}

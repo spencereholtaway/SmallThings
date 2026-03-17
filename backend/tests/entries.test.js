@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createDb, insertEntry, getEntries, deleteEntry, cleanupOldEntries } from '../src/db.js';
+import { createDb, insertEntry, getEntries, deleteEntry } from '../src/db.js';
 import { validateEntry, validateUuid, parseBbox } from '../src/validation.js';
 
 // --- Validation unit tests ---
@@ -161,17 +161,5 @@ describe('Database', () => {
     assert.ok(!deleteEntry(db, entry.id)); // already gone
   });
 
-  it('cleans up old entries', () => {
-    const old = makeEntry({ created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() });
-    const recent = makeEntry();
-    insertEntry(db, old);
-    insertEntry(db, recent);
 
-    const deleted = cleanupOldEntries(db);
-    assert.equal(deleted, 1);
-
-    const results = getEntries(db, { since: new Date(0).toISOString() });
-    assert.equal(results.length, 1);
-    assert.equal(results[0].id, recent.id);
-  });
 });

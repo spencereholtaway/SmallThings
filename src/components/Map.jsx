@@ -249,9 +249,9 @@ export default function Map({ entries, filter }) {
       });
 
       if (visible.length === 1) {
-        map.flyTo({ center: bounds.getCenter(), zoom: 14, padding: { top: 60, bottom: 200, left: 60, right: 60 } });
+        map.flyTo({ center: bounds.getCenter(), zoom: 14, padding: { top: 60, bottom: 300, left: 60, right: 60 } });
       } else {
-        map.fitBounds(bounds, { padding: { top: 60, bottom: 200, left: 60, right: 60 }, maxZoom: 15 });
+        map.fitBounds(bounds, { padding: { top: 60, bottom: 300, left: 60, right: 60 }, maxZoom: 15 });
       }
     }
   }, [entries, filter]);

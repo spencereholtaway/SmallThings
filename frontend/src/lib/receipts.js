@@ -1,28 +1,38 @@
-const STORAGE_KEY = 'small-things-receipts';
+// Receipts are kept in memory only — no localStorage.
+// The user loads them from a file on startup and saves to a file after changes.
+
+let receipts = [];
 
 export function getReceipts() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    return [];
-  }
+  return receipts;
 }
 
-export function saveReceipt({ uuid, trueLat, trueLng, createdAt }) {
-  const receipts = getReceipts();
-  receipts.push({ uuid, trueLat, trueLng, createdAt });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(receipts));
+export function addReceipt({ uuid, trueLat, trueLng, createdAt }) {
+  receipts = [...receipts, { uuid, trueLat, trueLng, createdAt }];
+}
+
+export function removeReceipt(uuid) {
+  receipts = receipts.filter((r) => r.uuid !== uuid);
 }
 
 export function isMyEntry(uuid) {
-  return getReceipts().some((r) => r.uuid === uuid);
+  return receipts.some((r) => r.uuid === uuid);
 }
 
 export function getReceiptFor(uuid) {
-  return getReceipts().find((r) => r.uuid === uuid) || null;
+  return receipts.find((r) => r.uuid === uuid) || null;
 }
 
-export function deleteReceipt(uuid) {
-  const receipts = getReceipts().filter((r) => r.uuid !== uuid);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(receipts));
+export function loadReceiptsFromJson(json) {
+  const parsed = JSON.parse(json);
+  if (!Array.isArray(parsed)) throw new Error('Invalid receipts file');
+  receipts = parsed;
+}
+
+export function exportReceiptsJson() {
+  return JSON.stringify(receipts, null, 2);
+}
+
+export function receiptCount() {
+  return receipts.length;
 }

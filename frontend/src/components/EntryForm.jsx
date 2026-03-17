@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { anonymizeCoordinates } from '../lib/anonymize.js';
-import { saveReceipt } from '../lib/receipts.js';
+import { addReceipt } from '../lib/receipts.js';
 
 export default function EntryForm({ onCreated }) {
   const [note, setNote] = useState('');
@@ -49,8 +49,8 @@ export default function EntryForm({ onCreated }) {
         throw new Error(data.error || data.errors?.join(', ') || 'Failed to create entry');
       }
 
-      // Save receipt locally
-      saveReceipt({ uuid, trueLat, trueLng, createdAt });
+      // Add receipt to in-memory store
+      addReceipt({ uuid, trueLat, trueLng, createdAt });
       setNote('');
       onCreated();
     } catch (err) {

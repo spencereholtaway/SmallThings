@@ -302,6 +302,10 @@ body {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
 }
 
+.entry-card__input::placeholder {
+  opacity: 0.5;
+}
+
 .entry-card__btn {
   display: flex;
   height: 64px;

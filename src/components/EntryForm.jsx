@@ -120,6 +120,7 @@ export default function EntryForm({ onCreated }) {
         className="entry-card__input"
         value={note}
         onChange={(e) => setNote(e.target.value)}
+        placeholder="My small thing…"
         rows={2}
         maxLength={1000}
         disabled={submitting}

@@ -3,30 +3,25 @@ import { latLngToCell, cellToLatLng } from 'h3-js';
 const H3_RESOLUTION = 6;
 
 export async function anonymizeCoordinates(trueLat, trueLng, uuid) {
-  // Step 1: Snap to H3 hex center
   const h3Index = latLngToCell(trueLat, trueLng, H3_RESOLUTION);
   const [hexLat, hexLng] = cellToLatLng(h3Index);
 
-  // Step 2: Deterministic pseudo-random offset using SHA-256 of UUID
   const encoder = new TextEncoder();
   const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(uuid));
   const bytes = new Uint8Array(hashBuffer);
 
-  // Extract distance (1.0 - 3.0 km) from first 4 bytes
   const distanceRaw = (bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3]) >>> 0;
   const distanceKm = 1.0 + (distanceRaw / 0xFFFFFFFF) * 2.0;
 
-  // Extract bearing (0 - 360°) from next 4 bytes
   const bearingRaw = (bytes[4] << 24 | bytes[5] << 16 | bytes[6] << 8 | bytes[7]) >>> 0;
   const bearingDeg = (bearingRaw / 0xFFFFFFFF) * 360.0;
 
-  // Haversine destination formula
   const { lat, lng } = destinationPoint(hexLat, hexLng, distanceKm, bearingDeg);
   return { anonLat: lat, anonLng: lng };
 }
 
 function destinationPoint(lat, lng, distanceKm, bearingDeg) {
-  const R = 6371; // Earth radius in km
+  const R = 6371;
   const d = distanceKm / R;
   const brng = (bearingDeg * Math.PI) / 180;
   const lat1 = (lat * Math.PI) / 180;

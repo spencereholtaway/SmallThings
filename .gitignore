@@ -1,5 +1,4 @@
 node_modules/
 dist/
-backend/data/
+.vercel/
 .DS_Store
-*.db

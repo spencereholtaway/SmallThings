@@ -15,7 +15,6 @@ export default function EntryForm({ onCreated }) {
     setError(null);
 
     try {
-      // Get current position
       const position = await new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -28,11 +27,9 @@ export default function EntryForm({ onCreated }) {
       const uuid = crypto.randomUUID();
       const createdAt = new Date().toISOString();
 
-      // Anonymize coordinates
       const { anonLat, anonLng } = await anonymizeCoordinates(trueLat, trueLng, uuid);
 
-      // Post to backend
-      const res = await fetch('/entries', {
+      const res = await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,7 +46,6 @@ export default function EntryForm({ onCreated }) {
         throw new Error(data.error || data.errors?.join(', ') || 'Failed to create entry');
       }
 
-      // Add receipt to in-memory store
       addReceipt({ uuid, trueLat, trueLng, createdAt });
       setNote('');
       onCreated();

@@ -1,6 +1,3 @@
-// Receipts are kept in memory only — no localStorage.
-// The user loads them from a file on startup and saves to a file after changes.
-
 let receipts = [];
 
 export function getReceipts() {

@@ -27,7 +27,7 @@ export default function App() {
 
   const fetchEntries = useCallback(async () => {
     try {
-      const res = await fetch('/entries');
+      const res = await fetch('/api/entries');
       const data = await res.json();
       setEntries(data.entries);
     } catch (err) {
@@ -50,10 +50,9 @@ export default function App() {
         loadReceiptsFromJson(ev.target.result);
         setReceiptsLoaded(true);
         setUnsaved(false);
-        // Re-render list with loaded receipts
         setEntries((prev) => [...prev]);
       } catch {
-        alert('Could not load that file. Make sure it\'s a valid Small Things data file.');
+        alert("Could not load that file. Make sure it's a valid Small Things data file.");
       }
     };
     reader.readAsText(file);
@@ -77,7 +76,7 @@ export default function App() {
 
   async function handleDelete(id) {
     try {
-      const res = await fetch(`/entries/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/entries/${id}`, { method: 'DELETE' });
       if (res.ok) {
         removeReceipt(id);
         setEntries((prev) => prev.filter((e) => e.id !== id));
@@ -88,7 +87,6 @@ export default function App() {
     }
   }
 
-  // --- Data file screen ---
   if (!receiptsLoaded) {
     return (
       <div className="app">
@@ -120,15 +118,12 @@ export default function App() {
     );
   }
 
-  // --- Main app ---
   return (
     <div className="app">
       <header className="app__header">
         <h1>A Series of Small Things</h1>
         <div className="app__header-actions">
-          {unsaved && (
-            <span className="unsaved-badge">unsaved changes</span>
-          )}
+          {unsaved && <span className="unsaved-badge">unsaved changes</span>}
           <button className="btn btn--small" onClick={handleSaveFile}>
             Save my data
           </button>
@@ -139,7 +134,10 @@ export default function App() {
             style={{ display: 'none' }}
             onChange={handleLoadFile}
           />
-          <button className="btn btn--small btn--secondary" onClick={() => fileInputRef.current.click()}>
+          <button
+            className="btn btn--small btn--secondary"
+            onClick={() => fileInputRef.current.click()}
+          >
             Load file
           </button>
         </div>

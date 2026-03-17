@@ -214,6 +214,37 @@ body {
   border-color: #3b82f6;
 }
 
+.emoji-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.emoji-btn {
+  font-size: 1.25rem;
+  background: none;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  padding: 0.2rem 0.3rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: border-color 0.1s;
+}
+
+.emoji-btn:hover:not(:disabled) {
+  border-color: #ddd;
+}
+
+.emoji-btn--selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.emoji-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .entry-form__error {
   font-size: 0.85rem;
   color: #e55;

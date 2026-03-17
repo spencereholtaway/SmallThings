@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { anonymizeCoordinates } from '../lib/anonymize.js';
 import { addReceipt } from '../lib/receipts.js';
+import { suggestEmojis } from '../lib/suggestEmojis.js';
 
 export default function EntryForm({ onCreated }) {
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedEmoji, setSelectedEmoji] = useState('');
+
+  const suggestions = useMemo(() => suggestEmojis(note), [note]);
+
+  // Auto-select first suggestion whenever suggestions change
+  useEffect(() => {
+    setSelectedEmoji(suggestions[0] || '');
+  }, [suggestions]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,6 +38,9 @@ export default function EntryForm({ onCreated }) {
 
       const { anonLat, anonLng } = await anonymizeCoordinates(trueLat, trueLng, uuid);
 
+      const contentObj = { note: note.trim() };
+      if (selectedEmoji) contentObj.emoji = selectedEmoji;
+
       const res = await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,7 +48,7 @@ export default function EntryForm({ onCreated }) {
           id: uuid,
           anon_lat: anonLat,
           anon_lng: anonLng,
-          content: JSON.stringify({ note: note.trim() }),
+          content: JSON.stringify(contentObj),
           created_at: createdAt,
         }),
       });
@@ -46,7 +58,7 @@ export default function EntryForm({ onCreated }) {
         throw new Error(data.error || data.errors?.join(', ') || 'Failed to create entry');
       }
 
-      addReceipt({ uuid, trueLat, trueLng, createdAt });
+      addReceipt({ uuid, trueLat, trueLng, createdAt, emoji: selectedEmoji || undefined });
       setNote('');
       onCreated();
     } catch (err) {
@@ -71,6 +83,21 @@ export default function EntryForm({ onCreated }) {
         maxLength={1000}
         disabled={submitting}
       />
+      {suggestions.length > 0 && (
+        <div className="emoji-suggestions">
+          {suggestions.map((emoji, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`emoji-btn${selectedEmoji === emoji ? ' emoji-btn--selected' : ''}`}
+              onClick={() => setSelectedEmoji(selectedEmoji === emoji ? '' : emoji)}
+              disabled={submitting}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
       {error && <p className="entry-form__error">{error}</p>}
       <button className="entry-form__submit" type="submit" disabled={submitting || !note.trim()}>
         {submitting ? 'Sharing...' : 'Share'}

@@ -4,8 +4,10 @@ export function getReceipts() {
   return receipts;
 }
 
-export function addReceipt({ uuid, trueLat, trueLng, createdAt }) {
-  receipts = [...receipts, { uuid, trueLat, trueLng, createdAt }];
+export function addReceipt({ uuid, trueLat, trueLng, createdAt, emoji }) {
+  const receipt = { uuid, trueLat, trueLng, createdAt };
+  if (emoji) receipt.emoji = emoji;
+  receipts = [...receipts, receipt];
 }
 
 export function removeReceipt(uuid) {

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: small-things
+    runtime: node
+    buildCommand: npm run build
+    startCommand: npm start
+    disk:
+      name: small-things-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_PATH
+        value: /var/data/entries.db
+      - key: NODE_ENV
+        value: production

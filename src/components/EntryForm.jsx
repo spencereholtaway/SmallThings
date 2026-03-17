@@ -3,7 +3,8 @@ import { anonymizeCoordinates } from '../lib/anonymize.js';
 import { addReceipt } from '../lib/receipts.js';
 import { suggestEmojis } from '../lib/suggestEmojis.js';
 
-const EMOJI_SLOT_COUNT = 7;
+const EMOJI_SLOT_COUNT_MOBILE = 6;
+const EMOJI_SLOT_COUNT_DESKTOP = 8;
 
 export default function EntryForm({ onCreated }) {
   const [note, setNote] = useState('');
@@ -11,6 +12,17 @@ export default function EntryForm({ onCreated }) {
   const [error, setError] = useState(null);
   const [selectedEmoji, setSelectedEmoji] = useState('');
   const [saved, setSaved] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 600);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsDesktop(window.innerWidth >= 600);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const emojiSlotCount = isDesktop ? EMOJI_SLOT_COUNT_DESKTOP : EMOJI_SLOT_COUNT_MOBILE;
 
   const suggestions = useMemo(() => suggestEmojis(note), [note]);
 
@@ -97,7 +109,7 @@ export default function EntryForm({ onCreated }) {
 
   // Build emoji slots: fill with suggestions, rest are empty
   const slots = [];
-  for (let i = 0; i < EMOJI_SLOT_COUNT; i++) {
+  for (let i = 0; i < emojiSlotCount; i++) {
     slots.push(suggestions[i] || null);
   }
 

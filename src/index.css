@@ -212,6 +212,13 @@ body {
   font-family: 'Crimson Text', Georgia, serif;
   font-size: 1.2rem;
   font-weight: 600;
+  text-align: left;
+}
+
+@media (min-width: 600px) {
+  .entry-card__label {
+    text-align: center;
+  }
 }
 
 .entry-card__input {
@@ -272,7 +279,7 @@ body {
 
 .emoji-row {
   display: flex;
-  gap: 0.35rem;
+  justify-content: space-between;
 }
 
 .emoji-circle {

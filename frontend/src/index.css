@@ -1,0 +1,157 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #fafafa;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.app__header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 1rem;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  color: #888;
+  padding: 2rem 0;
+}
+
+/* Entry List */
+.entry-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.entry {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.entry--mine {
+  border-left: 3px solid #3b82f6;
+}
+
+.entry__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.entry__time {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.entry__badge {
+  font-size: 0.7rem;
+  background: #3b82f6;
+  color: #fff;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.entry__content {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.entry__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entry__location {
+  font-size: 0.75rem;
+  color: #aaa;
+  font-variant-numeric: tabular-nums;
+}
+
+.entry__approx {
+  font-style: italic;
+}
+
+.entry__delete {
+  font-size: 0.75rem;
+  background: none;
+  border: none;
+  color: #e55;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.entry__delete:hover {
+  text-decoration: underline;
+}
+
+/* Entry Form */
+.entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entry-form__input {
+  font-family: inherit;
+  font-size: 0.95rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+  resize: vertical;
+}
+
+.entry-form__input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.entry-form__error {
+  font-size: 0.85rem;
+  color: #e55;
+}
+
+.entry-form__submit {
+  align-self: flex-end;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+}
+
+.entry-form__submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.entry-form__submit:hover:not(:disabled) {
+  background: #333;
+}

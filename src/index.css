@@ -303,24 +303,30 @@ body {
 }
 
 .entry-card__btn {
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
-  background: #1a1a1a;
+  display: flex;
+  height: 64px;
+  padding: 8px 32px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 100px;
+  background: #333;
   color: #fff;
   border: none;
-  border-radius: 999px;
-  padding: 0.75rem;
   cursor: pointer;
-  text-align: center;
+  font-family: "Crimson Text";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 .entry-card__btn:hover:not(:disabled) {
-  background: #333;
+  background: #444;
 }
 
 .entry-card__btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

@@ -27,6 +27,11 @@ export function createDb(dbPath) {
 }
 
 export function openDb() {
+  const customPath = process.env.DATABASE_PATH;
+  if (customPath) {
+    mkdirSync(dirname(customPath), { recursive: true });
+    return createDb(customPath);
+  }
   mkdirSync(DATA_DIR, { recursive: true });
   return createDb(join(DATA_DIR, 'entries.db'));
 }

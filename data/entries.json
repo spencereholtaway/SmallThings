@@ -46,5 +46,13 @@
     "content": "{\"note\":\"I saw a tree\",\"emoji\":\"🌴\"}",
     "created_at": "2026-03-17T18:03:47.178Z",
     "received_at": "2026-03-17T18:03:47.355Z"
+  },
+  {
+    "id": "a310fdf1-88be-4577-b534-0c83e538c716",
+    "anon_lat": 37.763267900663706,
+    "anon_lng": -122.41700071069717,
+    "content": "{\"note\":\"Peanuts\",\"emoji\":\"🇵🇪\"}",
+    "created_at": "2026-03-17T18:08:17.686Z",
+    "received_at": "2026-03-17T18:08:17.843Z"
   }
 ]

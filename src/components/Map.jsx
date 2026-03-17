@@ -78,6 +78,54 @@ export default function Map({ entries, filter }) {
         .setLngLat([lng, lat])
         .addTo(map);
 
+      // Add popup for user's own entries
+      if (mine) {
+        let note = '';
+        try {
+          const parsed = JSON.parse(entry.content);
+          note = parsed.note || '';
+        } catch {}
+
+        const time = new Date(entry.created_at).toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        });
+
+        const popupHTML = `<div class="marker-popup">`
+          + `<div class="marker-popup__time">${time}</div>`
+          + (note ? `<div class="marker-popup__note">${note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : '')
+          + `</div>`;
+
+        const popup = new maplibregl.Popup({
+          offset: 20,
+          closeButton: false,
+          closeOnClick: true,
+          className: 'marker-popup-wrapper',
+        }).setHTML(popupHTML);
+
+        el.style.cursor = 'pointer';
+
+        // Desktop: hover
+        el.addEventListener('mouseenter', () => {
+          if (!popup.isOpen()) marker.setPopup(popup).togglePopup();
+        });
+        el.addEventListener('mouseleave', () => {
+          if (popup.isOpen()) popup.remove();
+        });
+
+        // Mobile: tap
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (popup.isOpen()) {
+            popup.remove();
+          } else {
+            marker.setPopup(popup).togglePopup();
+          }
+        });
+      }
+
       markersRef.current.push(marker);
       bounds.extend([lng, lat]);
     });

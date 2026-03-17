@@ -1,59 +1,56 @@
-import Database from 'better-sqlite3';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { mkdirSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, '..', 'data');
+const FILE_PATH = join(DATA_DIR, 'entries.json');
 
-export function createDb(dbPath) {
-  const db = new Database(dbPath);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS entries (
-      id TEXT PRIMARY KEY,
-      anon_lat REAL NOT NULL,
-      anon_lng REAL NOT NULL,
-      content TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      received_at TEXT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_entries_created_at ON entries(created_at);
-  `);
-
-  return db;
+export function createStore(entries = []) {
+  return { entries, _file: null };
 }
 
-export function openDb() {
+export function openStore() {
   mkdirSync(DATA_DIR, { recursive: true });
-  return createDb(join(DATA_DIR, 'entries.db'));
-}
-
-export function insertEntry(db, entry) {
-  const stmt = db.prepare(`
-    INSERT INTO entries (id, anon_lat, anon_lng, content, created_at, received_at)
-    VALUES (@id, @anon_lat, @anon_lng, @content, @created_at, @received_at)
-  `);
-  return stmt.run(entry);
-}
-
-export function getEntries(db, { since, bbox }) {
-  let sql = 'SELECT id, anon_lat, anon_lng, content, created_at FROM entries WHERE created_at > ?';
-  const params = [since];
-
-  if (bbox) {
-    sql += ' AND anon_lat >= ? AND anon_lng >= ? AND anon_lat <= ? AND anon_lng <= ?';
-    params.push(bbox.minLat, bbox.minLng, bbox.maxLat, bbox.maxLng);
+  if (!existsSync(FILE_PATH)) {
+    writeFileSync(FILE_PATH, '[]', 'utf8');
   }
-
-  sql += ' ORDER BY created_at DESC';
-  return db.prepare(sql).all(...params);
+  const entries = JSON.parse(readFileSync(FILE_PATH, 'utf8'));
+  return { entries, _file: FILE_PATH };
 }
 
-export function deleteEntry(db, id) {
-  const result = db.prepare('DELETE FROM entries WHERE id = ?').run(id);
-  return result.changes > 0;
+function save(store) {
+  if (store._file) {
+    writeFileSync(store._file, JSON.stringify(store.entries, null, 2), 'utf8');
+  }
 }
 
+export function insertEntry(store, entry) {
+  if (store.entries.some(e => e.id === entry.id)) {
+    const err = new Error('Entry with this id already exists');
+    err.code = 'DUPLICATE_ID';
+    throw err;
+  }
+  store.entries.push(entry);
+  save(store);
+}
+
+export function getEntries(store, { since, bbox }) {
+  return store.entries
+    .filter(e => e.created_at > since)
+    .filter(e => {
+      if (!bbox) return true;
+      return e.anon_lat >= bbox.minLat && e.anon_lat <= bbox.maxLat &&
+             e.anon_lng >= bbox.minLng && e.anon_lng <= bbox.maxLng;
+    })
+    .map(({ received_at, ...rest }) => rest)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function deleteEntry(store, id) {
+  const idx = store.entries.findIndex(e => e.id === id);
+  if (idx === -1) return false;
+  store.entries.splice(idx, 1);
+  save(store);
+  return true;
+}

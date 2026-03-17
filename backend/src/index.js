@@ -3,12 +3,12 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { openDb } from './db.js';
+import { openStore } from './db.js';
 import { entriesRouter } from './routes/entries.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-const db = openDb();
+const store = openStore();
 
 // Middleware
 app.use(cors());
@@ -40,7 +40,7 @@ const deleteLimiter = rateLimit({
 });
 
 // Routes
-app.use('/entries', entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }));
+app.use('/entries', entriesRouter(store, { postLimiter, getLimiter, deleteLimiter }));
 
 // Serve frontend static files
 app.use(express.static(join(__dirname, '..', '..', 'frontend', 'dist')));
@@ -55,7 +55,6 @@ app.get('*', (_req, res) => {
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  db.close();
   process.exit(0);
 });
 
@@ -64,4 +63,4 @@ app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
 
-export { app, db };
+export { app, store };

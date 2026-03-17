@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createDb, insertEntry, getEntries, deleteEntry } from '../src/db.js';
+import { createStore, insertEntry, getEntries, deleteEntry } from '../src/db.js';
 import { validateEntry, validateUuid, parseBbox } from '../src/validation.js';
 
 // --- Validation unit tests ---
@@ -86,19 +86,15 @@ describe('parseBbox', () => {
 
 // --- Database integration tests ---
 
-describe('Database', () => {
-  let db;
+describe('Store', () => {
+  let store;
 
   before(() => {
-    db = createDb(':memory:');
-  });
-
-  after(() => {
-    db.close();
+    store = createStore();
   });
 
   beforeEach(() => {
-    db.exec('DELETE FROM entries');
+    store.entries = [];
   });
 
   const makeEntry = (overrides = {}) => ({
@@ -113,9 +109,9 @@ describe('Database', () => {
 
   it('inserts and retrieves an entry', () => {
     const entry = makeEntry();
-    insertEntry(db, entry);
+    insertEntry(store, entry);
 
-    const results = getEntries(db, { since: new Date(Date.now() - 60000).toISOString() });
+    const results = getEntries(store, { since: new Date(Date.now() - 60000).toISOString() });
     assert.equal(results.length, 1);
     assert.equal(results[0].id, entry.id);
     assert.equal(results[0].anon_lat, entry.anon_lat);
@@ -125,17 +121,17 @@ describe('Database', () => {
 
   it('rejects duplicate id', () => {
     const entry = makeEntry();
-    insertEntry(db, entry);
-    assert.throws(() => insertEntry(db, entry), /UNIQUE/);
+    insertEntry(store, entry);
+    assert.throws(() => insertEntry(store, entry), /already exists/);
   });
 
   it('filters by since', () => {
     const old = makeEntry({ created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() });
     const recent = makeEntry();
-    insertEntry(db, old);
-    insertEntry(db, recent);
+    insertEntry(store, old);
+    insertEntry(store, recent);
 
-    const results = getEntries(db, { since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() });
+    const results = getEntries(store, { since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() });
     assert.equal(results.length, 1);
     assert.equal(results[0].id, recent.id);
   });
@@ -143,10 +139,10 @@ describe('Database', () => {
   it('filters by bbox', () => {
     const inside = makeEntry({ anon_lat: 37.5, anon_lng: -122.5 });
     const outside = makeEntry({ anon_lat: 40.0, anon_lng: -120.0 });
-    insertEntry(db, inside);
-    insertEntry(db, outside);
+    insertEntry(store, inside);
+    insertEntry(store, outside);
 
-    const results = getEntries(db, {
+    const results = getEntries(store, {
       since: new Date(Date.now() - 60000).toISOString(),
       bbox: { minLat: 37, minLng: -123, maxLat: 38, maxLng: -122 },
     });
@@ -156,9 +152,9 @@ describe('Database', () => {
 
   it('deletes an entry', () => {
     const entry = makeEntry();
-    insertEntry(db, entry);
-    assert.ok(deleteEntry(db, entry.id));
-    assert.ok(!deleteEntry(db, entry.id)); // already gone
+    insertEntry(store, entry);
+    assert.ok(deleteEntry(store, entry.id));
+    assert.ok(!deleteEntry(store, entry.id)); // already gone
   });
 
 

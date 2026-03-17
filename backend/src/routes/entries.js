@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { insertEntry, getEntries, deleteEntry } from '../db.js';
 import { validateEntry, validateUuid, parseBbox } from '../validation.js';
 
-export function entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }) {
+export function entriesRouter(store, { postLimiter, getLimiter, deleteLimiter }) {
   const router = Router();
 
   router.post('/', postLimiter, (req, res) => {
@@ -21,9 +21,9 @@ export function entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }) {
     };
 
     try {
-      insertEntry(db, entry);
+      insertEntry(store, entry);
     } catch (err) {
-      if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
+      if (err.code === 'DUPLICATE_ID') {
         return res.status(409).json({ error: 'Entry with this id already exists' });
       }
       throw err;
@@ -33,7 +33,7 @@ export function entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }) {
   });
 
   router.get('/', getLimiter, (req, res) => {
-    const since = req.query.since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const since = req.query.since || new Date(0).toISOString();
 
     if (req.query.since && isNaN(Date.parse(req.query.since))) {
       return res.status(400).json({ error: 'since must be a valid ISO 8601 timestamp' });
@@ -47,7 +47,7 @@ export function entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }) {
       }
     }
 
-    const entries = getEntries(db, { since, bbox });
+    const entries = getEntries(store, { since, bbox });
     res.json({ entries, count: entries.length, since });
   });
 
@@ -56,7 +56,7 @@ export function entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }) {
       return res.status(400).json({ error: 'id must be a valid UUID v4' });
     }
 
-    const deleted = deleteEntry(db, req.params.id);
+    const deleted = deleteEntry(store, req.params.id);
     if (!deleted) {
       return res.status(404).json({ error: 'Entry not found' });
     }

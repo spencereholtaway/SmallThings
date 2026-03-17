@@ -1,9 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { openDb, cleanupOldEntries } from './db.js';
 import { entriesRouter } from './routes/entries.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const db = openDb();
 
@@ -39,8 +42,16 @@ const deleteLimiter = rateLimit({
 // Routes
 app.use('/entries', entriesRouter(db, { postLimiter, getLimiter, deleteLimiter }));
 
+// Serve frontend static files
+app.use(express.static(join(__dirname, '..', '..', 'frontend', 'dist')));
+
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+// SPA fallback — serve index.html for any non-API route
+app.get('*', (_req, res) => {
+  res.sendFile(join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
+});
 
 // Cleanup old entries on startup and every 24 hours
 const runCleanup = () => {

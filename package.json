@@ -1,0 +1,10 @@
+{
+  "name": "a-series-of-small-things",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && npm install && node src/index.js",
+    "dev": "cd backend && npm run dev"
+  }
+}

@@ -94,6 +94,12 @@ body {
   height: 100%;
 }
 
+.map-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .map {
   position: absolute;
   inset: 0;
@@ -394,6 +400,12 @@ body {
   gap: 0.5rem;
 }
 
+@media (min-width: 768px) {
+  .overlay-top-right--mobile-only {
+    display: none;
+  }
+}
+
 .user-menu {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
@@ -691,4 +703,204 @@ body {
 .emoji-circle:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Desktop moments sidebar ── */
+
+.moments-sidebar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .moments-sidebar {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    width: 288px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.13);
+    overflow: hidden;
+    z-index: 10;
+  }
+}
+
+.moments-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1rem 1.1rem 1.25rem;
+  background: #fff;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.moments-sidebar__title {
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.moments-sidebar__user-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.moments-sidebar__user-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.moments-sidebar__user-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.moments-sidebar__user-wrap .user-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+}
+
+.moments-sidebar__list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.moments-sidebar__empty {
+  padding: 2rem 1.25rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  text-align: center;
+}
+
+/* ── Moment list item ── */
+
+.moment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background 0.15s;
+  outline: none;
+}
+
+.moment-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.moment-item:focus-visible {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.moment-item__emoji {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f0e8;
+  border-radius: 50%;
+  margin-top: 1px;
+}
+
+.moment-item__content {
+  flex: 1;
+  min-width: 0;
+  padding-right: 0.25rem;
+}
+
+.moment-item__content .marker-popup__note {
+  max-width: 100%;
+}
+
+.moment-item__delete {
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.moment-item__delete:hover {
+  color: #d44;
+}
+
+/* ── Inline delete confirmation ── */
+
+.moment-item--confirming {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  cursor: default;
+  background: #fdf5f5;
+}
+
+.moment-item--confirming:hover {
+  background: #fdf5f5;
+}
+
+.moment-item__confirm-label {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.875rem;
+  color: #1a1a1a;
+}
+
+.moment-item__confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.moment-item__confirm-btn {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.moment-item__confirm-btn:hover {
+  opacity: 0.85;
+}
+
+.moment-item__confirm-btn--delete {
+  background: #d44;
+  color: #fff;
+}
+
+.moment-item__confirm-btn--cancel {
+  background: #ebebeb;
+  color: #1a1a1a;
 }

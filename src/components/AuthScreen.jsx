@@ -21,12 +21,6 @@ export default function AuthScreen() {
           >
             Sign in with Google
           </button>
-          <button
-            className="auth-btn auth-btn--apple"
-            onClick={() => signIn('apple')}
-          >
-            Sign in with Apple
-          </button>
         </div>
       </div>
     </div>

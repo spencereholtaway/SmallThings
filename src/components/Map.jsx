@@ -82,6 +82,7 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const clusterRef = useRef(null); // { index, visible }
+  const tooltipRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     flyToUser() {
@@ -102,6 +103,8 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
   function renderMarkers() {
     const map = mapRef.current;
     if (!map || !clusterRef.current) return;
+
+    if (tooltipRef.current) tooltipRef.current.style.display = 'none';
 
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
@@ -160,32 +163,35 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
             minute: '2-digit',
           });
 
-          const popupHTML = `<div class="marker-popup">`
-            + `<div class="marker-popup__time">${time}</div>`
-            + (note ? `<div class="marker-popup__note">${note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : '')
-            + `</div>`;
-
-          const popup = new maplibregl.Popup({
-            offset: 20,
-            closeButton: false,
-            closeOnClick: true,
-            className: 'marker-popup-wrapper',
-          }).setHTML(popupHTML);
-
           el.style.cursor = 'pointer';
 
-          el.addEventListener('mouseenter', () => {
-            if (!popup.isOpen()) marker.setPopup(popup).togglePopup();
-          });
-          el.addEventListener('mouseleave', () => {
-            if (popup.isOpen()) popup.remove();
-          });
+          const showTooltip = () => {
+            const tooltip = tooltipRef.current;
+            if (!tooltip) return;
+            let html = `<div class="marker-popup__time">${time}</div>`;
+            if (note) html += `<div class="marker-popup__note">${note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+            tooltip.innerHTML = html;
+            const rect = el.getBoundingClientRect();
+            const containerRect = containerRef.current.getBoundingClientRect();
+            tooltip.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
+            tooltip.style.top = (rect.top - containerRect.top) + 'px';
+            tooltip.style.display = 'block';
+          };
+
+          const hideTooltip = () => {
+            const tooltip = tooltipRef.current;
+            if (tooltip) tooltip.style.display = 'none';
+          };
+
+          el.addEventListener('mouseenter', showTooltip);
+          el.addEventListener('mouseleave', hideTooltip);
           el.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (popup.isOpen()) {
-              popup.remove();
+            const tooltip = tooltipRef.current;
+            if (tooltip && tooltip.style.display !== 'none') {
+              hideTooltip();
             } else {
-              marker.setPopup(popup).togglePopup();
+              showTooltip();
             }
           });
         }
@@ -210,6 +216,15 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     mapRef.current = map;
 
+    const tooltipEl = document.createElement('div');
+    tooltipEl.className = 'marker-tooltip';
+    tooltipEl.style.display = 'none';
+    containerRef.current.appendChild(tooltipEl);
+    tooltipRef.current = tooltipEl;
+
+    map.on('click', () => {
+      if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+    });
     map.on('moveend', renderMarkers);
     map.on('zoomend', renderMarkers);
 

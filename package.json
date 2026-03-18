@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.99.2",
     "emojibase-data": "^17.0.0",
     "h3-js": "^4.2.1",
     "lucide-react": "^0.577.0",

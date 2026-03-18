@@ -18,6 +18,78 @@ body {
   line-height: 1.5;
 }
 
+/* ── Auth screen ── */
+
+.auth-screen {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f0e8;
+  padding: 1rem;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auth-card__title {
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.auth-card__subtitle {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.auth-card__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-btn {
+  display: flex;
+  height: 52px;
+  padding: 8px 24px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.auth-btn:hover {
+  opacity: 0.85;
+}
+
+.auth-btn--google {
+  background: #333;
+  color: #fff;
+}
+
+.auth-btn--apple {
+  background: #000;
+  color: #fff;
+}
+
 /* ── Layout ── */
 
 .app {
@@ -163,6 +235,23 @@ body {
   word-break: break-word;
 }
 
+.marker-popup__delete {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #aaa;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+.marker-popup__delete:hover {
+  color: #d44;
+}
+
 /* ── Overlay: top filter ── */
 
 .overlay-top {
@@ -241,6 +330,126 @@ body {
 .filter-toggle__chevron {
   flex-shrink: 0;
   opacity: 0.5;
+}
+
+/* ── Overlay: top right (user menu) ── */
+
+.overlay-top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.user-menu {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  min-width: 160px;
+}
+
+.user-menu__item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.95rem;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.user-menu__item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.user-menu__item--danger {
+  color: #d44;
+}
+
+/* ── Delete account dialog ── */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.dialog {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dialog__message {
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.dialog__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.dialog__btn {
+  flex: 1;
+  height: 48px;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.dialog__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dialog__btn--cancel {
+  background: #f0f0f0;
+  color: #1a1a1a;
+}
+
+.dialog__btn--cancel:hover:not(:disabled) {
+  background: #e4e4e4;
+}
+
+.dialog__btn--confirm {
+  background: #d44;
+  color: #fff;
+}
+
+.dialog__btn--confirm:hover:not(:disabled) {
+  background: #c33;
 }
 
 /* ── Overlay: data actions ── */

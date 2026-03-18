@@ -2,7 +2,6 @@ import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import maplibregl from 'maplibre-gl';
 import Supercluster from 'supercluster';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { isMyEntry, getReceiptFor } from '../lib/receipts.js';
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
 const STYLE_URL = `https://api.maptiler.com/maps/aquarelle/style.json?key=${MAPTILER_KEY}`;
@@ -34,7 +33,7 @@ const EMOJI_COLORS = {
   '💫': '#fbbf24', '🎃': '#f97316', '🎄': '#22c55e', '🎆': '#a78bfa',
   '🎇': '#f97316', '🎋': '#22c55e', '🏔': '#9ca3af', '🌬️': '#93c5fd',
   '🍄': '#f97316', '🌵': '#4d7c0f', '🦜': '#22c55e', '🐊': '#4d7c0f',
-  '🦩': '#f9a8d4', '🦋': '#a78bfa', '🐝': '#fbbf24', '🦗': '#4d7c0f',
+  '🦩': '#f9a8d4', '🐝': '#fbbf24', '🦗': '#4d7c0f',
   '🍂': '#f97316', '🌿': '#22c55e', '☘️': '#22c55e', '🌔': '#fbbf24',
 };
 
@@ -77,12 +76,21 @@ function createClusterElement(count) {
   return wrapper;
 }
 
-const Map = forwardRef(function Map({ entries, filter }, ref) {
+const Map = forwardRef(function Map({ entries, receipts, filter, onDelete }, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const clusterRef = useRef(null); // { index, visible }
   const tooltipRef = useRef(null);
+
+  // Helper: check if an entry is mine (by looking up in receipts)
+  function isMyEntry(id) {
+    return receipts.some((r) => r.id === id);
+  }
+
+  function getReceiptFor(id) {
+    return receipts.find((r) => r.id === id) || null;
+  }
 
   useImperativeHandle(ref, () => ({
     flyToUser() {
@@ -134,8 +142,7 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
           .addTo(map);
         markersRef.current.push(marker);
       } else {
-        const { idx, emoji, mine } = feature.properties;
-        const entry = visible[idx];
+        const { idx, emoji, mine, note, time } = feature.properties;
 
         let el;
         if (emoji) {
@@ -149,28 +156,30 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
           .setLngLat([lng, lat])
           .addTo(map);
 
-        if (mine && entry) {
-          let note = '';
-          try {
-            const parsed = JSON.parse(entry.content);
-            note = parsed.note || '';
-          } catch {}
-
-          const time = new Date(entry.created_at).toLocaleString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-          });
-
+        if (mine && note) {
+          const entryId = visible[idx]?.id;
           el.style.cursor = 'pointer';
 
           const showTooltip = () => {
             const tooltip = tooltipRef.current;
             if (!tooltip) return;
-            let html = `<div class="marker-popup__time">${time}</div>`;
-            if (note) html += `<div class="marker-popup__note">${note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
-            tooltip.innerHTML = html;
+            const escapedNote = note.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            tooltip.innerHTML = `
+              <div class="marker-popup__time">${time}</div>
+              <div class="marker-popup__note">${escapedNote}</div>
+              <button class="marker-popup__delete" data-entry-id="${entryId}">&times;</button>
+            `;
+            tooltip.style.pointerEvents = 'auto';
+
+            const deleteBtn = tooltip.querySelector('.marker-popup__delete');
+            if (deleteBtn) {
+              deleteBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                if (onDelete) onDelete(entryId);
+                tooltip.style.display = 'none';
+              });
+            }
+
             const rect = el.getBoundingClientRect();
             const containerRect = containerRef.current.getBoundingClientRect();
             tooltip.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
@@ -180,11 +189,18 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
 
           const hideTooltip = () => {
             const tooltip = tooltipRef.current;
-            if (tooltip) tooltip.style.display = 'none';
+            if (tooltip) {
+              tooltip.style.display = 'none';
+              tooltip.style.pointerEvents = 'none';
+            }
           };
 
           el.addEventListener('mouseenter', showTooltip);
-          el.addEventListener('mouseleave', hideTooltip);
+          el.addEventListener('mouseleave', (e) => {
+            const tooltip = tooltipRef.current;
+            if (tooltip && tooltip.contains(e.relatedTarget)) return;
+            hideTooltip();
+          });
           el.addEventListener('click', (e) => {
             e.stopPropagation();
             const tooltip = tooltipRef.current;
@@ -234,7 +250,7 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
     };
   }, []);
 
-  // Rebuild cluster index when entries or filter change
+  // Rebuild cluster index when entries, receipts, or filter change
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -249,16 +265,24 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
       const lat = receipt ? receipt.trueLat : entry.anon_lat;
       const lng = receipt ? receipt.trueLng : entry.anon_lng;
 
-      let emoji = null;
-      try {
-        const parsed = JSON.parse(entry.content);
-        emoji = parsed.emoji || null;
-      } catch {}
+      // Emoji comes from the shared entry directly
+      const emoji = entry.emoji || null;
+
+      // Note and time come from the receipt (private, decrypted blob)
+      const note = receipt ? receipt.note : null;
+      const time = receipt
+        ? new Date(receipt.createdAt).toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })
+        : null;
 
       return {
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [lng, lat] },
-        properties: { idx, emoji, mine },
+        properties: { idx, emoji, mine, note, time },
       };
     });
 
@@ -271,12 +295,8 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
     // Fit map to bounds
     if (visible.length > 0) {
       const bounds = new maplibregl.LngLatBounds();
-      visible.forEach((entry) => {
-        const mine = isMyEntry(entry.id);
-        const receipt = mine ? getReceiptFor(entry.id) : null;
-        const lat = receipt ? receipt.trueLat : entry.anon_lat;
-        const lng = receipt ? receipt.trueLng : entry.anon_lng;
-        bounds.extend([lng, lat]);
+      points.forEach((p) => {
+        bounds.extend(p.geometry.coordinates);
       });
 
       if (visible.length === 1) {
@@ -285,7 +305,7 @@ const Map = forwardRef(function Map({ entries, filter }, ref) {
         map.fitBounds(bounds, { padding: { top: 60, bottom: 300, left: 60, right: 60 }, maxZoom: 15 });
       }
     }
-  }, [entries, filter]);
+  }, [entries, receipts, filter]);
 
   return <div ref={containerRef} className="map" />;
 });

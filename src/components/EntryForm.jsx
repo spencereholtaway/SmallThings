@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { anonymizeCoordinates } from '../lib/anonymize.js';
-import { addReceipt } from '../lib/receipts.js';
 import { suggestEmojis } from '../lib/suggestEmojis.js';
+import { supabase } from '../lib/supabase.js';
 
 const EMOJI_SLOT_COUNT_MOBILE = 6;
 const EMOJI_SLOT_COUNT_DESKTOP = 8;
@@ -47,36 +47,39 @@ export default function EntryForm({ onCreated }) {
 
       const trueLat = position.coords.latitude;
       const trueLng = position.coords.longitude;
-      const uuid = crypto.randomUUID();
+      const id = crypto.randomUUID();
+      const deleteToken = crypto.randomUUID();
       const createdAt = new Date().toISOString();
 
-      const { anonLat, anonLng } = await anonymizeCoordinates(trueLat, trueLng, uuid);
+      const { anonLat, anonLng } = await anonymizeCoordinates(trueLat, trueLng, id);
 
-      const contentObj = { note: note.trim() };
-      if (selectedEmoji) contentObj.emoji = selectedEmoji;
-
-      const res = await fetch('/api/entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: uuid,
+      // Insert into shared entries (public: just emoji + anonymized coords)
+      const { error: insertError } = await supabase
+        .from('shared_entries')
+        .insert({
+          id,
           anon_lat: anonLat,
           anon_lng: anonLng,
-          content: JSON.stringify(contentObj),
-          created_at: createdAt,
-        }),
+          emoji: selectedEmoji || null,
+          delete_token: deleteToken,
+        });
+
+      if (insertError) throw new Error(insertError.message);
+
+      // Pass receipt back to App for encrypted blob storage
+      onCreated({
+        id,
+        deleteToken,
+        trueLat,
+        trueLng,
+        note: note.trim(),
+        emoji: selectedEmoji || undefined,
+        createdAt,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || data.errors?.join(', ') || 'Failed to create entry');
-      }
-
-      addReceipt({ uuid, trueLat, trueLng, createdAt, emoji: selectedEmoji || undefined });
       setNote('');
       setSelectedEmoji('');
       setSaved(true);
-      onCreated();
     } catch (err) {
       if (err.code === 1) {
         setError('Location access denied. Please allow location access to save moments.');

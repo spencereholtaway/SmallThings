@@ -149,7 +149,7 @@ const Map = forwardRef(function Map({ entries, receipts, filter, onDelete }, ref
           .addTo(map);
         markersRef.current.push(marker);
       } else {
-        const { idx, emoji, mine, note, time } = feature.properties;
+        const { idx, emoji, mine, note, time, isSample } = feature.properties;
 
         let el;
         if (emoji) {
@@ -158,6 +158,8 @@ const Map = forwardRef(function Map({ entries, receipts, filter, onDelete }, ref
           el = document.createElement('div');
           el.className = 'map-marker map-marker--dot';
         }
+
+        if (isSample) el.classList.add('map-marker--sample');
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat([lng, lat])
@@ -286,10 +288,12 @@ const Map = forwardRef(function Map({ entries, receipts, filter, onDelete }, ref
           })
         : null;
 
+      const isSample = entry.isSample || false;
+
       return {
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [lng, lat] },
-        properties: { idx, emoji, mine, note, time },
+        properties: { idx, emoji, mine, note, time, isSample },
       };
     });
 

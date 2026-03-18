@@ -94,5 +94,13 @@
     "content": "{\"note\":\"This is my moment. This is my special moment, to me.\",\"emoji\":\"🩷\"}",
     "created_at": "2026-03-17T23:14:54.988Z",
     "received_at": "2026-03-17T23:14:55.190Z"
+  },
+  {
+    "id": "3728df11-7e03-410c-b2bb-7bb0b76db730",
+    "anon_lat": 37.78307482927226,
+    "anon_lng": -122.44283601636516,
+    "content": "{\"note\":\"Testing localStorage\",\"emoji\":\"🦖\"}",
+    "created_at": "2026-03-18T00:07:20.654Z",
+    "received_at": "2026-03-18T00:07:20.886Z"
   }
 ]

@@ -6,6 +6,7 @@ import AuthScreen from './components/AuthScreen.jsx';
 import { Navigation, User } from 'lucide-react';
 import { supabase } from './lib/supabase.js';
 import { initUserCrypto, loadBlob, saveBlob } from './lib/blob.js';
+import { SAMPLE_ENTRIES } from './lib/sampleData.js';
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = loading, null = logged out
@@ -14,6 +15,7 @@ export default function App() {
   const [encryptionKey, setEncryptionKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [showSample, setShowSample] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -163,7 +165,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Map ref={mapRef} entries={entries} receipts={receipts} filter={filter} onDelete={handleDelete} />
+      <Map ref={mapRef} entries={showSample ? [...entries, ...SAMPLE_ENTRIES] : entries} receipts={receipts} filter={filter} onDelete={handleDelete} />
 
       <div className="overlay-top">
         <FilterDropdown value={filter} onChange={setFilter} />
@@ -174,6 +176,14 @@ export default function App() {
           type="button"
         >
           <Navigation size={18} strokeWidth={1.75} />
+        </button>
+        <button
+          className={`sample-toggle${showSample ? ' sample-toggle--on' : ''}`}
+          onClick={() => setShowSample((v) => !v)}
+          type="button"
+        >
+          <span className="sample-toggle__dot" />
+          <span className="sample-toggle__label">Sample data</span>
         </button>
       </div>
 

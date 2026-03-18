@@ -190,6 +190,10 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+.map-marker--sample {
+  opacity: 0.45;
+}
+
 /* ── Marker tooltip ── */
 
 .marker-tooltip {
@@ -326,6 +330,54 @@ body {
 .filter-toggle__chevron {
   flex-shrink: 0;
   opacity: 0.5;
+}
+
+/* ── Sample data toggle ── */
+
+.sample-toggle {
+  display: inline-flex;
+  padding: 8px 14px 8px 12px;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.sample-toggle:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.sample-toggle:active {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.sample-toggle__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.sample-toggle--on .sample-toggle__dot {
+  background: #4ade80;
+}
+
+.sample-toggle__label {
+  color: #333;
+  font-family: Inter;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
 }
 
 /* ── Overlay: top right (user menu) ── */

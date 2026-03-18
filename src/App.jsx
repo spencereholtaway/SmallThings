@@ -23,7 +23,6 @@ export default function App() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [unsaved, setUnsaved] = useState(false);
   const fileInputRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -51,7 +50,6 @@ export default function App() {
     reader.onload = (ev) => {
       try {
         loadReceiptsFromJson(ev.target.result);
-        setUnsaved(false);
         setEntries((prev) => [...prev]);
       } catch {
         alert("Could not load that file. Make sure it's a valid Small Things data file.");
@@ -64,11 +62,9 @@ export default function App() {
   function handleSaveFile() {
     const json = exportReceiptsJson();
     downloadFile(json, 'small-things-data.json');
-    setUnsaved(false);
   }
 
   function handleEntryCreated() {
-    setUnsaved(true);
     fetchEntries();
   }
 
@@ -100,14 +96,14 @@ export default function App() {
           <button
             className="data-btn"
             onClick={handleSaveFile}
-            title="Save my data"
+            title="Download backup"
           >
-            {unsaved ? '●' : ''} ↓
+            ↓
           </button>
           <button
             className="data-btn"
             onClick={() => fileInputRef.current.click()}
-            title="Load data file"
+            title="Restore from backup"
           >
             ↑
           </button>

@@ -87,6 +87,7 @@ export default function App() {
   function handleEntryCreated(receipt) {
     saveReceipts([...receipts, receipt]);
     fetchEntries();
+    mapRef.current?.flyTo(receipt.trueLng, receipt.trueLat, 18);
   }
 
   async function handleDelete(entryId) {

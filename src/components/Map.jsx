@@ -106,6 +106,13 @@ const Map = forwardRef(function Map({ entries, receipts, filter, onDelete }, ref
         { enableHighAccuracy: true, timeout: 8000 },
       );
     },
+    flyTo(lng, lat, zoom = 18) {
+      mapRef.current?.flyTo({
+        center: [lng, lat],
+        zoom,
+        duration: 1200,
+      });
+    },
   }));
 
   function renderMarkers() {
